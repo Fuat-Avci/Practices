@@ -32,7 +32,7 @@ The analysis uses a **cervical miRNA expression dataset** consisting of:
 | Target classes | Normal and Tumor |
 | Machine-learning task | Binary classification |
 
-The working R script imports a local tabular dataset, transposes it to **samples C features**, and creates a `patient_status` factor. In the current workflow, the first 29 samples are assigned `Normal` and the next 29 `Tumor`; **this ordering should be checked against the original dataset metadata before biological interpretation or public reuse**.
+The working R script imports a local tabular dataset, transposes it to **samples x features**, and creates a `patient_status` factor. In the current workflow, the first 29 samples are assigned `Normal` and the next 29 `Tumor`; **this ordering should be checked against the original dataset metadata before biological interpretation or public reuse**.
 
 > The dataset is small relative to the number of features, so estimated model performance may be highly sensitive to the data split.
 
