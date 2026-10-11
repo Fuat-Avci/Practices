@@ -145,17 +145,6 @@ However, this hypothesis has not yet been directly tested.
 
 The findings are exploratory due to the limited sample size. Repeated train/test splits may share observations, and 10 repetitions do not establish statistical significance or external generalizability.
 
-## Technologies
-
-- **Programming language:** R
-- **Machine learning:** `caret`
-- **Data manipulation:** `dplyr`
-- **Decision Tree:** `rpart`
-- **Random Forest:** `randomForest`
-- **Gradient Boosting:** `xgboost`
-- **Linear Discriminant Analysis:** `MASS` / `caret`
-- **Data package:** `MLSeq`
-- **Evaluation:** Repeated stratified hold-out validation
 
 > **Compatibility note:** An older XGBoost 1.7.x release was used because of compatibility issues with newer versions when integrated with `caret`.
 
