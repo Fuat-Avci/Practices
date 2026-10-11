@@ -175,8 +175,6 @@ Planned steps include:
 - Repeat the experiment across the same 10 data splits.
 - Compare iterative self-training with supervised learning and single-step self-training.
 
-Additional evaluation metrics such as sensitivity, specificity, F1-score, and ROC-AUC may be included in future experiments.
-
 ## Limitations
 
 - The dataset contains only 58 samples.
