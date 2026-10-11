@@ -6,7 +6,7 @@ A beginner-friendly, reproducible R project comparing **supervised learning** wi
 
 ## Project overview
 
-![Overview of the dataset, supervised and single-step self-training workflows, four classification algorithms, and ten-repetition accuracy results](Semi-supervised_learning.png)
+![Overview of the dataset, supervised and single-step self-training workflows, four classification algorithms, and ten-repetition accuracy results](figures/Semi-supervised_learning.png)
 
 *Figure 1. Overview of the completed study. The sample counts in the split diagram are schematic approximations; the actual stratified split in this run used 42 training and 16 test samples, with 12 training labels hidden (30% rounded down).*
 
