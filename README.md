@@ -1,20 +1,25 @@
+
 # Semi-Supervised Learning for Cervical Cancer Classification Using miRNA Expression Data
 
-A beginner-friendly, reproducible R project comparing **supervised learning** with **single-step self-training** for binary classification of cervical cancer samples using miRNA expression features.
+A beginner-friendly R project comparing **supervised learning** with **single-step self-training** for binary classification of cervical cancer samples using miRNA expression features.
 
-> **Project status:** Supervised and single-step self-training experiments (10 repetitions) are complete. Confidence-based iterative self-training is planned and has **not yet been evaluated**.
+> **Project status:** Supervised and single-step self-training experiments (10 repetitions) are complete. Confidence-based iterative self-training is planned but has not yet been evaluated.
 
-## Project overview
+## Visual Summary
 
-![Overview of the dataset, supervised and single-step self-training workflows, four classification algorithms, and ten-repetition accuracy results](figures/Semi-supervised_learning.png)
+![Project workflow summary](figures/Summary.png)
 
-*Figure 1. Overview of the completed study. The sample counts in the split diagram are schematic approximations; the actual stratified split in this run used 42 training and 16 test samples, with 12 training labels hidden (30% rounded down).*
+## Project Overview
 
-## Research question
+![Semi-Supervised Learning Overview](figures/Semi-supervised_learning.png)
+
+*Figure 1. Overview of the dataset, supervised learning, single-step self-training, and the classification workflow. The illustrated sample counts are schematic; the implemented stratified split uses 42 training and 16 test samples.*
+
+## Research Question
 
 **Does adding pseudo-labeled training samples improve classification performance when only a small number of samples have known labels?**
 
-We compare four classification pipelines under the same train/test splits:
+We compare four classification pipelines using identical train/test splits:
 
 - **Decision Tree** (`caret` / `rpart`)
 - **Random Forest** (`caret` / `rf`)
@@ -23,7 +28,7 @@ We compare four classification pipelines under the same train/test splits:
 
 ## Dataset
 
-The analysis uses a **cervical miRNA expression dataset** consisting of:
+The analysis uses a cervical miRNA expression dataset.
 
 | Property | Value |
 |---|---|
@@ -32,65 +37,164 @@ The analysis uses a **cervical miRNA expression dataset** consisting of:
 | Target classes | Normal and Tumor |
 | Machine-learning task | Binary classification |
 
-The working R script imports a local tabular dataset, transposes it to **samples x features**, and creates a `patient_status` factor. In the current workflow, the first 29 samples are assigned `Normal` and the next 29 `Tumor`; **this ordering should be checked against the original dataset metadata before biological interpretation or public reuse**.
+The R script imports a local tabular dataset, transposes it into a **samples x features** matrix, and creates a `patient_status` factor.
 
-> The dataset is small relative to the number of features, so estimated model performance may be highly sensitive to the data split.
+The first 29 samples are assigned `Normal` and the next 29 `Tumor` in the current workflow. This ordering should be verified against the original dataset metadata before biological interpretation or public reuse.
 
-## Experimental design
+> The dataset contains substantially more features than samples. Consequently, model performance may be sensitive to the training/test partition.
 
-For **each of 10 repetitions**:
+## Experimental Design
+
+The experiment is repeated **10 times**.
+
+For each repetition:
 
 1. Create a **stratified 70% training / 30% test split** using `caret::createDataPartition`.
-2. Randomly hide **30% of the training labels**. These samples act as the unlabeled pool; their true labels are not used for model training.
-3. Train each **supervised baseline** using only the remaining labeled samples.
-4. For **single-step self-training**, use the baseline model to predict a pseudo-label for **every** unlabeled training sample.
-5. Add the pseudo-labeled samples to the labeled training set and train a new model once.
-6. Evaluate both versions on the **same held-out test set**; record test accuracy.
-7. Report the **mean** and **sample standard deviation** of test accuracy across the 10 repetitions.
+2. Randomly hide **30% of the training labels** to simulate unlabeled samples.
+3. Train a **supervised baseline model** using only genuinely labeled training samples.
+4. Predict pseudo-labels for all unlabeled samples.
+5. Combine labeled and pseudo-labeled samples.
+6. Retrain the classifier once using the combined dataset.
+7. Evaluate supervised and self-training models on the same held-out test set.
+8. Record test accuracy for each model.
 
-Each repetition uses seed `918 + i` for the data split and label masking. The same split is shared by all algorithms within a repetition. The reported results use `caret`'s default bootstrap resampling for model training/tuning, with `set.seed(123)` before fitting each model.
+The same train/test partition and labeled/unlabeled split are used across algorithms within each repetition.
 
-### Learning strategies
+Random seeds:
 
-```text
-                       Original dataset
-                              |
-                      Train / Test split
-                              |
-                     Hide 30% train labels
-                              |
-                  +-----------+-----------+
-                  |                       |
-             Labeled data           Unlabeled data
-                  |                       |
-                  +--> Supervised model --+
-                           |              |
-                           |       Predict pseudo-labels
-                           |              |
-                    Test evaluation       v
-                                    Combine labeled and
-                                     pseudo-labeled data
-                                            |
-                                     Retrain model once
-                                            |
-                                      Test evaluation
-```
+- Data splitting: `918 + i`
+- Model training: `123`
 
-**Supervised learning:** Fit on genuinely labeled samples only.
+The `caret` package uses its default bootstrap resampling procedure for model training and hyperparameter tuning.
 
-**Single-step self-training:** Fit on labeled samples, assign pseudo-labels to all unlabeled training samples, combine the two groups, then fit once more. **No confidence threshold was used** in this experiment.
+## Learning Strategies
 
-### Special handling for LDA
+### 1. Supervised Learning
 
-The number of features (714) greatly exceeds the number of labeled training samples. Therefore, LDA was preceded by training-only preprocessing:
+The classifier is trained exclusively on the available labeled samples.
+
+### 2. Single-Step Self-Training
+
+The classifier is initially trained using labeled samples. It then predicts labels for all unlabeled training samples.
+
+These pseudo-labeled samples are combined with the original labeled data, and a new classifier is trained once.
+
+**No confidence threshold is applied in the current single-step experiment.**
+
+### Special Handling for LDA
+
+Since the number of predictors (714) exceeds the number of labeled training samples, traditional LDA cannot be applied reliably without dimensionality reduction.
+
+The following preprocessing pipeline is used:
 
 ```r
 preProcess = c("zv", "center", "scale", "pca")
 preProcOptions = list(pcaComp = 5)
 ```
 
-This removes zero-variance features, centers/scales the others, and reduces the predictor space to **five principal components**. During prediction, the PCA transformation learned from the corresponding training data is applied to the test samples; the test set is **not used to fit PCA**. Five components were fixed as an initial exploratory choice, not selected by test accuracy.
+This pipeline:
 
-## Results: 10 repeated experiments
+- Removes zero-variance features.
+- Centers and scales the remaining predictors.
+- Performs Principal Component Analysis.
+- Retains five principal components for LDA classification.
 
-The table contains **held-out test accuracy**, averaged over 10 repetitionsb
+Preprocessing is learned from training data and applied to the test set without fitting PCA on test samples.
+
+The number of principal components was fixed for this exploratory experiment.
+
+## Results: 10 Repeated Experiments
+
+The following table presents the **mean held-out test accuracy** and **standard deviation** across 10 repetitions.
+
+| Algorithm | Supervised Accuracy | Self-Training Accuracy | Supervised SD | Self-Training SD |
+|---|---:|---:|---:|---:|
+| Decision Tree | 68.13% | 68.13% | 0.1040 | 0.1040 |
+| Random Forest | 78.13% | 75.63% | 0.0943 | 0.1195 |
+| XGBoost | 84.38% | 78.75% | 0.0846 | 0.1149 |
+| **PCA + LDA** | **85.00%** | **80.63%** | **0.0791** | **0.0688** |
+
+### Model Performance Visualization
+
+![Study workflow and ten-repetition accuracy comparison](figures/study_overview.png)
+
+*Figure 2. Model performance comparison across 10 repeated experiments.*
+
+### Interpretation
+
+**1. Best supervised model**
+
+PCA + LDA achieved the highest mean test accuracy (**85.00%**), closely followed by XGBoost (**84.38%**).
+
+**2. Effect of single-step self-training**
+
+Single-step self-training did not improve mean accuracy for any of the four algorithms.
+
+- Decision Tree: No change.
+- Random Forest: Lower mean accuracy.
+- XGBoost: Lower mean accuracy.
+- PCA + LDA: Lower mean accuracy.
+
+**3. Possible explanation**
+
+Including all pseudo-labeled samples without considering prediction confidence may introduce incorrectly labeled observations into the training data.
+
+However, this hypothesis has not yet been directly tested.
+
+**4. Statistical considerations**
+
+The findings are exploratory due to the limited sample size. Repeated train/test splits may share observations, and 10 repetitions do not establish statistical significance or external generalizability.
+
+## Technologies
+
+- **Programming language:** R
+- **Machine learning:** `caret`
+- **Data manipulation:** `dplyr`
+- **Decision Tree:** `rpart`
+- **Random Forest:** `randomForest`
+- **Gradient Boosting:** `xgboost`
+- **Linear Discriminant Analysis:** `MASS` / `caret`
+- **Data package:** `MLSeq`
+- **Evaluation:** Repeated stratified hold-out validation
+
+> **Compatibility note:** An older XGBoost 1.7.x release was used because of compatibility issues with newer versions when integrated with `caret`.
+
+## Running the Project
+
+1. Install the required R packages.
+2. Obtain the cervical miRNA dataset from its original source.
+3. Update the `file_path` variable in the R script.
+4. Run the data preprocessing steps.
+5. Execute the supervised and single-step self-training experiments.
+6. Run the 10-repetition evaluation.
+7. Inspect the `comparison_10` results table.
+
+For full reproducibility, dataset provenance, class-label ordering, package versions, and file paths should be verified and documented.
+
+## Planned Work
+
+The next stage will investigate **confidence-based iterative self-training**.
+
+Planned steps include:
+
+- Train an initial classifier using labeled observations.
+- Estimate prediction probabilities for unlabeled observations.
+- Select pseudo-labels exceeding a predefined confidence threshold.
+- Add selected samples to the labeled training set.
+- Retrain the classifier iteratively.
+- Stop when no additional samples satisfy the selection criteria or a stopping limit is reached.
+- Repeat the experiment across the same 10 data splits.
+- Compare iterative self-training with supervised learning and single-step self-training.
+
+Additional evaluation metrics such as sensitivity, specificity, F1-score, and ROC-AUC may be included in future experiments.
+
+## Limitations
+
+- The dataset contains only 58 samples.
+- The number of miRNA features is high relative to the sample size.
+- Model performance may vary considerably across data partitions.
+- The current self-training approach does not filter uncertain pseudo-labels.
+- External validation has not been conducted.
+- The reported accuracies should not be interpreted as clinically validated diagnostic performance.
+
+This project is intended for **educational and exploratory machine-learning research**, not clinical diagnosis.
