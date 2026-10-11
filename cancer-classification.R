@@ -351,7 +351,7 @@ xgb_supervised_cm <- confusionMatrix(
 xgb_supervised_cm
 
 
-### XGBoost ??? Pseudo-labeling  ####
+### XGBoost Pseudo-labeling  ####
 
 
 # Predict Unlabeled Data
@@ -458,7 +458,7 @@ print(model_comparison)
 
 
 
-# LDA ??? Supervised Learning
+# LDA Supervised Learning
 
 set.seed(123)
 
