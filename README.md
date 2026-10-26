@@ -7,6 +7,8 @@ In this repository you can find Machine Learnig project comparing **supervised l
 
 **Confidence-based iterative self-training will be added very soon** 
 
+## ALL IMAGES ARE CREATED BY AI 
+
 ## Visual Summary
 
 ![Project workflow summary](figures/Summary.png)
