@@ -1,9 +1,11 @@
 
 # Semi-Supervised Learning for Cervical Cancer Classification Using miRNA Expression Data
 
-A beginner-friendly R project comparing **supervised learning** with **single-step self-training** for binary classification of cervical cancer samples using miRNA expression features.
+In this repository you can find Machine Learnig project comparing **supervised learning** with **single-step self-training (semi-supervised)** for binary classification of cervical cancer samples using miRNA expression features.
 
-> **Project status:** Supervised and single-step self-training experiments (10 repetitions) are complete. Confidence-based iterative self-training is planned but has not yet been evaluated.
+**Supervised and single-step self-training experiments (10 repetitions) are complete.** 
+
+**Confidence-based iterative self-training will be added very soon** 
 
 ## Visual Summary
 
@@ -19,7 +21,7 @@ A beginner-friendly R project comparing **supervised learning** with **single-st
 
 **Does adding pseudo-labeled training samples improve classification performance when only a small number of samples have known labels?**
 
-We compare four classification pipelines using identical train/test splits:
+**We compare four classification pipelines using identical train/test splits:**
 
 - **Decision Tree** (`caret` / `rpart`)
 - **Random Forest** (`caret` / `rf`)
@@ -30,7 +32,7 @@ We compare four classification pipelines using identical train/test splits:
 
 The analysis uses a cervical miRNA expression dataset.
 
-| Property | Value |
+| Property | Value | 
 |---|---|
 | Samples | 58 |
 | miRNA expression features | 714 |
@@ -39,9 +41,7 @@ The analysis uses a cervical miRNA expression dataset.
 
 The R script imports a local tabular dataset, transposes it into a **samples x features** matrix, and creates a `patient_status` factor.
 
-The first 29 samples are assigned `Normal` and the next 29 `Tumor` in the current workflow. This ordering should be verified against the original dataset metadata before biological interpretation or public reuse.
-
-> The dataset contains substantially more features than samples. Consequently, model performance may be sensitive to the training/test partition.
+**The dataset contains substantially more features than samples. Consequently, model performance may be sensitive to the training/test partition.**
 
 ## Experimental Design
 
@@ -49,16 +49,16 @@ The experiment is repeated **10 times**.
 
 For each repetition:
 
-1. Create a **stratified 70% training / 30% test split** using `caret::createDataPartition`.
+1. Create a **stratified 70% training / 30% test split**
 2. Randomly hide **30% of the training labels** to simulate unlabeled samples.
 3. Train a **supervised baseline model** using only genuinely labeled training samples.
 4. Predict pseudo-labels for all unlabeled samples.
 5. Combine labeled and pseudo-labeled samples.
-6. Retrain the classifier once using the combined dataset.
+6. Retrain the **model** once using the combined dataset.
 7. Evaluate supervised and self-training models on the same held-out test set.
 8. Record test accuracy for each model.
 
-The same train/test partition and labeled/unlabeled split are used across algorithms within each repetition.
+**The same train/test partition and labeled/unlabeled split are used across algorithms within each repetition.**
 
 Random seeds:
 
@@ -139,14 +139,12 @@ Single-step self-training did not improve mean accuracy for any of the four algo
 
 Including all pseudo-labeled samples without considering prediction confidence may introduce incorrectly labeled observations into the training data.
 
-However, this hypothesis has not yet been directly tested.
-
 **4. Statistical considerations**
 
 The findings are exploratory due to the limited sample size. Repeated train/test splits may share observations, and 10 repetitions do not establish statistical significance or external generalizability.
 
 
-> **Compatibility note:** An older XGBoost 1.7.x release was used because of compatibility issues with newer versions when integrated with `caret`.
+> **Compatibility note:** An older XGBoost 1.7.x release was used because of compatibility issues with newer versions when integrated with **`caret`.**
 
 ## Running the Project
 
@@ -160,7 +158,7 @@ The findings are exploratory due to the limited sample size. Repeated train/test
 
 For full reproducibility, dataset provenance, class-label ordering, package versions, and file paths should be verified and documented.
 
-## Planned Work
+## Plans for the future
 
 The next stage will investigate **confidence-based iterative self-training**.
 
@@ -184,4 +182,4 @@ Planned steps include:
 - External validation has not been conducted.
 - The reported accuracies should not be interpreted as clinically validated diagnostic performance.
 
-This project is intended for **educational and exploratory machine-learning research**, not clinical diagnosis.
+**This project is intended for learning and practicing machine-learning algorithms**
